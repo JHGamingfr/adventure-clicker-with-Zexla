@@ -138,7 +138,7 @@ copy this
     // Download logic (use real hosted ZIP URL)
     document.getElementById('download-btn').onclick = () => {
       const a = document.createElement('a');
-      a.href = 'https://yourdomain.com/downloads/zexla-extension.zip';
+      a.href = 
       a.download = 'zexla-extension.zip';
       document.body.appendChild(a);
       a.click();
