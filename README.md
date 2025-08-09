@@ -18,7 +18,7 @@ copy this
     #progress-container{width:60%;background:rgba(255,255,255,0.3);border-radius:10px}
     #progress-bar{width:0%;height:16px;background:#0047AB;border-radius:10px;transition:width .3s}
     /* Support Bar */
-    #support-bar{display:none;position:fixed;top:0;left:0;right:0;background:#0047AB;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:10px;font-size:16px;z-index:3}
+    #support-bar{display:none;position:fixed;top:0;left:0;right:0;background:#0047AB;color:#fff;padding:10px 20px;align-items:center;gap:10px;font-size:16px;z-index:3}
     #support-bar input{flex:1;padding:4px 8px;border:none;border-radius:4px}
     #support-bar .status{font-weight:bold}
     #support-bar button{padding:4px 8px;border:none;border-radius:4px;cursor:pointer;background:#fff;color:#0047AB}
@@ -138,7 +138,7 @@ copy this
     // Download logic (use real hosted ZIP URL)
     document.getElementById('download-btn').onclick = () => {
       const a = document.createElement('a');
-      a.href = 
+      a.href = 'zexla-extension.zip';
       a.download = 'zexla-extension.zip';
       document.body.appendChild(a);
       a.click();
