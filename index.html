@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NeonOS</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05070f;
+      --panel: rgba(10, 16, 32, 0.92);
+      --accent: #37f3ff;
+      --accent-2: #f037ff;
+      --text: #e8f6ff;
+      --muted: #7fa8c7;
+      --warning: #ffb347;
+      --success: #4cff9b;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      --glow: 0 0 24px rgba(55, 243, 255, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, rgba(25, 46, 82, 0.4), transparent 60%),
+        radial-gradient(circle at top right, rgba(79, 15, 84, 0.35), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #boot-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(55, 243, 255, 0.2), transparent 70%),
+        #04070f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 999;
+      color: var(--text);
+    }
+
+    #boot-screen h1 {
+      font-size: 42px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: var(--glow);
+      margin: 0;
+    }
+
+    #boot-progress {
+      width: 280px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+
+    #boot-progress span {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: var(--glow);
+      transition: width 0.4s ease;
+    }
+
+    #boot-log {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    #desktop {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: grid;
+      grid-template-rows: 48px 1fr 42px;
+    }
+
+    #top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: rgba(8, 12, 24, 0.85);
+      border-bottom: 1px solid rgba(55, 243, 255, 0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    #top-bar .brand {
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-shadow: var(--glow);
+    }
+
+    #top-bar .status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #desktop-area {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #icon-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 120px);
+      grid-auto-rows: 110px;
+      gap: 18px;
+      padding: 28px;
+    }
+
+    .icon {
+      width: 110px;
+      height: 96px;
+      background: rgba(12, 18, 36, 0.75);
+      border: 1px solid rgba(55, 243, 255, 0.2);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .icon:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+
+    .icon span {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .window {
+      position: absolute;
+      width: 360px;
+      min-height: 220px;
+      background: var(--panel);
+      border: 1px solid rgba(55, 243, 255, 0.2);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .window.hidden {
+      display: none;
+    }
+
+    .window-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(11, 16, 32, 0.95);
+      cursor: move;
+      border-bottom: 1px solid rgba(55, 243, 255, 0.1);
+    }
+
+    .window-header h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--accent);
+    }
+
+    .window-header .controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .control-btn {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    .window-body {
+      padding: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      flex: 1;
+      overflow: auto;
+    }
+
+    .window-body h4 {
+      margin-top: 0;
+      color: var(--text);
+    }
+
+    #taskbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: rgba(8, 12, 24, 0.85);
+      border-top: 1px solid rgba(55, 243, 255, 0.1);
+    }
+
+    #taskbar .task-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .task-pill {
+      padding: 6px 12px;
+      background: rgba(55, 243, 255, 0.08);
+      border: 1px solid rgba(55, 243, 255, 0.2);
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    #notifications {
+      position: absolute;
+      right: 24px;
+      top: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+    }
+
+    .notification {
+      min-width: 240px;
+      background: rgba(12, 20, 40, 0.9);
+      border: 1px solid rgba(55, 243, 255, 0.25);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification strong {
+      display: block;
+      color: var(--accent);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .file-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .file-item {
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .file-item button {
+      background: none;
+      border: 1px solid rgba(55, 243, 255, 0.3);
+      color: var(--accent);
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .terminal {
+      background: rgba(3, 7, 12, 0.9);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: "Fira Code", "Cascadia Code", monospace;
+      color: #b3ffd9;
+      min-height: 120px;
+    }
+
+    .terminal input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #b3ffd9;
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .glitch {
+      color: var(--warning);
+      font-size: 12px;
+    }
+
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .pulse-cell {
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(55, 243, 255, 0.1);
+      border: 1px solid rgba(55, 243, 255, 0.1);
+      transition: background 0.3s ease;
+    }
+
+    .pulse-cell.active {
+      background: rgba(55, 243, 255, 0.6);
+      box-shadow: 0 0 12px rgba(55, 243, 255, 0.8);
+    }
+
+    .secret {
+      color: var(--success);
+    }
+
+    .hidden-app {
+      display: none;
+    }
+
+    .toggle {
+      background: rgba(55, 243, 255, 0.12);
+      border: 1px solid rgba(55, 243, 255, 0.3);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .glow {
+      animation: glowPulse 2s infinite;
+    }
+
+    @keyframes glowPulse {
+      0% {
+        box-shadow: 0 0 8px rgba(55, 243, 255, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(55, 243, 255, 0.8);
+      }
+      100% {
+        box-shadow: 0 0 8px rgba(55, 243, 255, 0.3);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="boot-screen">
+    <h1>NeonOS</h1>
+    <div id="boot-progress"><span></span></div>
+    <div id="boot-log">Calibrating photon lattice...</div>
+  </div>
+
+  <div id="desktop" aria-hidden="true">
+    <div id="top-bar">
+      <div class="brand">NEONOS :: CORE</div>
+      <div class="status">
+        <span id="system-time">00:00</span>
+        <span id="connection">Signal: 97%</span>
+        <button id="sound-toggle" class="toggle">Enable Sound</button>
+      </div>
+    </div>
+
+    <div id="desktop-area">
+      <div id="icon-grid">
+        <div class="icon" data-app="files">
+          <div>🗂️</div>
+          <span>File Matrix</span>
+        </div>
+        <div class="icon" data-app="terminal">
+          <div>⌘</div>
+          <span>Terminal</span>
+        </div>
+        <div class="icon" data-app="pulse">
+          <div>📡</div>
+          <span>Pulse Monitor</span>
+        </div>
+        <div class="icon" data-app="glitch">
+          <div>⚠️</div>
+          <span>Glitch Lab</span>
+        </div>
+        <div class="icon hidden-app" data-app="vault" id="vault-icon">
+          <div>🔒</div>
+          <span>Vault</span>
+        </div>
+      </div>
+
+      <div id="notifications" aria-live="polite"></div>
+
+      <div class="window hidden" id="window-files" style="top: 80px; left: 260px;">
+        <div class="window-header">
+          <h3>FILE MATRIX</h3>
+          <div class="controls">
+            <div class="control-btn" data-close="files"></div>
+          </div>
+        </div>
+        <div class="window-body">
+          <h4>Vault Index</h4>
+          <div class="file-list" id="file-list"></div>
+        </div>
+      </div>
+
+      <div class="window hidden" id="window-terminal" style="top: 130px; left: 640px;">
+        <div class="window-header">
+          <h3>TERMINAL / N3-L0G</h3>
+          <div class="controls">
+            <div class="control-btn" data-close="terminal"></div>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="terminal" id="terminal-log">
+            &gt; NeonOS shell active. Type <span class="secret">help</span> to begin.
+          </div>
+          <input id="terminal-input" type="text" placeholder="enter command..." autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="window hidden" id="window-pulse" style="top: 260px; left: 360px; width: 320px;">
+        <div class="window-header">
+          <h3>PULSE MONITOR</h3>
+          <div class="controls">
+            <div class="control-btn" data-close="pulse"></div>
+          </div>
+        </div>
+        <div class="window-body">
+          <h4>Ambient Diagnostics</h4>
+          <p>Listening to city heartbeat... signal spikes will reveal hidden frequencies.</p>
+          <div class="pulse-grid" id="pulse-grid"></div>
+          <p class="glitch" id="pulse-clue">No anomalies detected.</p>
+        </div>
+      </div>
+
+      <div class="window hidden" id="window-glitch" style="top: 190px; left: 80px; width: 340px;">
+        <div class="window-header">
+          <h3>GLITCH LAB</h3>
+          <div class="controls">
+            <div class="control-btn" data-close="glitch"></div>
+          </div>
+        </div>
+        <div class="window-body">
+          <h4>Unstable Reality Core</h4>
+          <p>Some apps behave strangely. This one echoes your intent... if you dare.</p>
+          <button id="glitch-button" class="toggle">Stabilize (0%)</button>
+          <p id="glitch-status" class="glitch">Warning: logic fragments drifting.</p>
+        </div>
+      </div>
+
+      <div class="window hidden" id="window-vault" style="top: 140px; left: 430px; width: 360px;">
+        <div class="window-header">
+          <h3>VAULT / 0MEGA</h3>
+          <div class="controls">
+            <div class="control-btn" data-close="vault"></div>
+          </div>
+        </div>
+        <div class="window-body">
+          <h4>Secret Archive</h4>
+          <p class="secret">You found the archive behind the city lights.</p>
+          <p>Hidden puzzle reward: <strong>"The silent signal speaks."</strong></p>
+          <p>Try clicking the system clock 9 times. If it flickers, you are close.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="taskbar">
+      <div class="task-section">
+        <div class="task-pill">Agent: AURORA</div>
+        <div class="task-pill" id="system-mode">Mode: STANDARD</div>
+      </div>
+      <div class="task-section">
+        <div class="task-pill" id="battery">Core: 88%</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const bootScreen = document.getElementById("boot-screen");
+    const bootProgress = document.querySelector("#boot-progress span");
+    const bootLog = document.getElementById("boot-log");
+    const desktop = document.getElementById("desktop");
+    const notifications = document.getElementById("notifications");
+    const systemTime = document.getElementById("system-time");
+    const soundToggle = document.getElementById("sound-toggle");
+    const systemMode = document.getElementById("system-mode");
+    const vaultIcon = document.getElementById("vault-icon");
+
+    const bootMessages = [
+      "Calibrating photon lattice...",
+      "Synchronizing neon grid...",
+      "Decrypting memory vault...",
+      "Launching illusion drivers...",
+      "Welcome back, Operator."
+    ];
+
+    let bootStep = 0;
+    const bootTimer = setInterval(() => {
+      bootStep += 1;
+      const progress = Math.min(bootStep * 20, 100);
+      bootProgress.style.width = `${progress}%`;
+      bootLog.textContent = bootMessages[Math.min(bootStep, bootMessages.length - 1)];
+      if (progress === 100) {
+        clearInterval(bootTimer);
+        setTimeout(() => {
+          bootScreen.style.display = "none";
+          desktop.setAttribute("aria-hidden", "false");
+          pushNotification("System Online", "NeonOS core is now awake.");
+          pushNotification("Tip", "Some apps behave strangely. Explore the Glitch Lab.");
+        }, 500);
+      }
+    }, 700);
+
+    const windows = {
+      files: document.getElementById("window-files"),
+      terminal: document.getElementById("window-terminal"),
+      pulse: document.getElementById("window-pulse"),
+      glitch: document.getElementById("window-glitch"),
+      vault: document.getElementById("window-vault")
+    };
+
+    let topZ = 10;
+
+    document.querySelectorAll(".icon").forEach((icon) => {
+      icon.addEventListener("click", () => {
+        const app = icon.dataset.app;
+        openWindow(app);
+        uiClick();
+      });
+    });
+
+    document.querySelectorAll(".control-btn").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        const app = event.target.dataset.close;
+        closeWindow(app);
+        uiClick();
+      });
+    });
+
+    function openWindow(app) {
+      const win = windows[app];
+      if (!win) return;
+      win.classList.remove("hidden");
+      win.style.zIndex = topZ++;
+    }
+
+    function closeWindow(app) {
+      const win = windows[app];
+      if (!win) return;
+      win.classList.add("hidden");
+    }
+
+    document.querySelectorAll(".window").forEach((win) => {
+      const header = win.querySelector(".window-header");
+      header.addEventListener("mousedown", (event) => startDrag(event, win));
+    });
+
+    let dragTarget = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    function startDrag(event, target) {
+      dragTarget = target;
+      dragTarget.style.zIndex = topZ++;
+      const rect = dragTarget.getBoundingClientRect();
+      dragOffsetX = event.clientX - rect.left;
+      dragOffsetY = event.clientY - rect.top;
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", endDrag);
+    }
+
+    function onDrag(event) {
+      if (!dragTarget) return;
+      const x = Math.max(0, Math.min(event.clientX - dragOffsetX, window.innerWidth - 100));
+      const y = Math.max(50, Math.min(event.clientY - dragOffsetY, window.innerHeight - 160));
+      dragTarget.style.left = `${x}px`;
+      dragTarget.style.top = `${y}px`;
+    }
+
+    function endDrag() {
+      dragTarget = null;
+      document.removeEventListener("mousemove", onDrag);
+      document.removeEventListener("mouseup", endDrag);
+    }
+
+    function pushNotification(title, message) {
+      const note = document.createElement("div");
+      note.className = "notification";
+      note.innerHTML = `<strong>${title}</strong>${message}`;
+      notifications.appendChild(note);
+      setTimeout(() => note.remove(), 5000);
+    }
+
+    const fileEntries = [
+      { name: "City_Log_77.txt", type: "log", content: "...lights hum louder than the sea." },
+      { name: "Aurora_Map.neon", type: "map", content: "Map nodes align at 03:33:33." },
+      { name: "Operator_Notes.md", type: "note", content: "Glitch Lab responds to patience." },
+      { name: "Hidden_Frequency.wav", type: "audio", content: "Signal encoded. Seek the word: unlock." }
+    ];
+
+    const fileList = document.getElementById("file-list");
+    fileEntries.forEach((entry) => {
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.innerHTML = `
+        <div>
+          <strong>${entry.name}</strong><br />
+          <span>${entry.type.toUpperCase()}</span>
+        </div>
+        <button>Open</button>
+      `;
+      item.querySelector("button").addEventListener("click", () => {
+        pushNotification(entry.name, entry.content);
+        uiClick();
+      });
+      fileList.appendChild(item);
+    });
+
+    const terminalLog = document.getElementById("terminal-log");
+    const terminalInput = document.getElementById("terminal-input");
+    let vaultUnlocked = false;
+
+    terminalInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const command = terminalInput.value.trim().toLowerCase();
+      if (!command) return;
+      appendTerminal(`> ${command}`);
+      respondTerminal(command);
+      terminalInput.value = "";
+      uiClick();
+    });
+
+    function appendTerminal(text) {
+      const line = document.createElement("div");
+      line.textContent = text;
+      terminalLog.appendChild(line);
+      terminalLog.scrollTop = terminalLog.scrollHeight;
+    }
+
+    function respondTerminal(command) {
+      const responses = {
+        help: "Commands: help, status, unlock, whisper, clear",
+        status: "NeonOS uptime: 77 cycles. Signal integrity: 99%.",
+        whisper: "The glow hides a vault behind the signal.",
+        clear: null
+      };
+      if (command === "clear") {
+        terminalLog.innerHTML = "> Terminal cleared.";
+        return;
+      }
+      if (command === "unlock") {
+        if (!vaultUnlocked) {
+          vaultUnlocked = true;
+          vaultIcon.classList.remove("hidden-app");
+          vaultIcon.classList.add("glow");
+          pushNotification("Vault unlocked", "A new app flickers into view.");
+          appendTerminal("Vault signature accepted. Archive exposed.");
+          return;
+        }
+        appendTerminal("Vault already unlocked.");
+        return;
+      }
+      if (responses[command]) {
+        appendTerminal(responses[command]);
+      } else {
+        appendTerminal("Unknown command. Try 'help'.");
+      }
+    }
+
+    const pulseGrid = document.getElementById("pulse-grid");
+    const pulseClue = document.getElementById("pulse-clue");
+    let pulseTick = 0;
+
+    for (let i = 0; i < 24; i += 1) {
+      const cell = document.createElement("div");
+      cell.className = "pulse-cell";
+      pulseGrid.appendChild(cell);
+    }
+
+    setInterval(() => {
+      const cells = pulseGrid.querySelectorAll(".pulse-cell");
+      cells.forEach((cell) => cell.classList.remove("active"));
+      const activeIndex = Math.floor(Math.random() * cells.length);
+      cells[activeIndex].classList.add("active");
+      pulseTick += 1;
+      if (pulseTick % 8 === 0) {
+        pulseClue.textContent = "Anomaly spike detected: 0xECHO";
+      } else if (pulseTick % 11 === 0) {
+        pulseClue.textContent = "Signal folded. Try the terminal: unlock.";
+      } else {
+        pulseClue.textContent = "No anomalies detected.";
+      }
+    }, 800);
+
+    const glitchButton = document.getElementById("glitch-button");
+    const glitchStatus = document.getElementById("glitch-status");
+    let glitchPower = 0;
+
+    glitchButton.addEventListener("click", () => {
+      glitchPower = Math.min(glitchPower + 20, 100);
+      glitchButton.textContent = `Stabilize (${glitchPower}%)`;
+      if (glitchPower >= 100) {
+        glitchStatus.textContent = "Reality stabilized. Secret location revealed.";
+        pushNotification("Glitch resolved", "The clock hides a secret cadence.");
+      } else {
+        glitchStatus.textContent = "Stability rising...";
+      }
+      uiClick();
+    });
+
+    let clockClicks = 0;
+    systemTime.addEventListener("click", () => {
+      clockClicks += 1;
+      if (clockClicks === 9) {
+        systemMode.textContent = "Mode: SPECTER";
+        systemMode.classList.add("glow");
+        pushNotification("Specter mode", "You found the hidden cadence.");
+      }
+      uiClick();
+    });
+
+    function updateTime() {
+      const now = new Date();
+      systemTime.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    let audioContext = null;
+    let ambientOsc = null;
+    let ambientGain = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+      if (audioContext) return;
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      ambientOsc = audioContext.createOscillator();
+      ambientGain = audioContext.createGain();
+      ambientOsc.type = "sine";
+      ambientOsc.frequency.value = 90;
+      ambientGain.gain.value = 0.02;
+      ambientOsc.connect(ambientGain).connect(audioContext.destination);
+      ambientOsc.start();
+    }
+
+    function toggleSound() {
+      if (!audioContext) initAudio();
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        ambientGain.gain.value = 0.04;
+        soundToggle.textContent = "Disable Sound";
+        pushNotification("Audio", "Ambient hum online.");
+      } else {
+        ambientGain.gain.value = 0.0;
+        soundToggle.textContent = "Enable Sound";
+        pushNotification("Audio", "Silence mode engaged.");
+      }
+    }
+
+    soundToggle.addEventListener("click", () => {
+      toggleSound();
+      uiClick();
+    });
+
+    function uiClick() {
+      if (!soundEnabled || !audioContext) return;
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.frequency.value = 520;
+      gain.gain.value = 0.03;
+      osc.connect(gain).connect(audioContext.destination);
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.08);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && ambientGain) {
+        ambientGain.gain.value = 0.0;
+      } else if (!document.hidden && soundEnabled) {
+        ambientGain.gain.value = 0.04;
+      }
+    });
+  </script>
+</body>
+</html>
