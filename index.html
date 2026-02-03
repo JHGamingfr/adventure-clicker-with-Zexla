@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lemonade Clicker</title>
+  <style>
+    :root {
+      --lemon-100: #fff8d1;
+      --lemon-200: #fff1a6;
+      --lemon-300: #ffe36e;
+      --lemon-400: #ffd23d;
+      --lemon-500: #ffc107;
+      --lemon-600: #f2b200;
+      --lemon-700: #e4a300;
+      --lemon-900: #a86f00;
+      --ink: #2d2100;
+      --card: #ffffff;
+      --shadow: 0 12px 30px rgba(255, 193, 7, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, var(--lemon-200), var(--lemon-100));
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      gap: 24px;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      margin-top: 8px;
+      font-size: 1.05rem;
+      opacity: 0.8;
+    }
+
+    .game {
+      width: min(1100px, 100%);
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: var(--lemon-100);
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .stat span {
+      display: block;
+      font-size: 1.4rem;
+      margin-top: 6px;
+      color: var(--lemon-900);
+    }
+
+    .button-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 320px;
+      position: relative;
+    }
+
+    .lemonade-btn {
+      width: clamp(200px, 40vw, 280px);
+      height: clamp(200px, 40vw, 280px);
+      border-radius: 50%;
+      border: none;
+      background: radial-gradient(circle at 30% 30%, #fffbe1, var(--lemon-400));
+      box-shadow: 0 14px 25px rgba(240, 178, 0, 0.4);
+      cursor: pointer;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .lemonade-btn:active {
+      transform: scale(0.96);
+      box-shadow: 0 8px 18px rgba(240, 178, 0, 0.35);
+    }
+
+    .lemonade-btn::after {
+      content: "🍋";
+      position: absolute;
+      font-size: 3rem;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .click-burst {
+      position: absolute;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--lemon-900);
+      animation: floatUp 0.8s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -40px) scale(1.2);
+      }
+    }
+
+    .shop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .shop-header h2 {
+      font-size: 1.6rem;
+    }
+
+    .upgrade-list {
+      display: grid;
+      gap: 12px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .upgrade {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-radius: 16px;
+      border: 2px solid var(--lemon-200);
+      padding: 12px 14px;
+      background: #fffdf1;
+      transition: transform 0.15s ease, border 0.2s ease;
+    }
+
+    .upgrade:hover {
+      transform: translateY(-2px);
+      border-color: var(--lemon-400);
+    }
+
+    .upgrade button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--lemon-500);
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+
+    .upgrade button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      background: #d7d0b0;
+    }
+
+    .upgrade button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .upgrade p {
+      font-size: 0.92rem;
+      opacity: 0.85;
+    }
+
+    footer {
+      text-align: center;
+      opacity: 0.75;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .game {
+        grid-template-columns: 1fr;
+      }
+
+      .button-wrap {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lemonade Clicker</h1>
+    <p>Click, upgrade, and build the ultimate lemonade empire.</p>
+  </header>
+
+  <main class="game">
+    <section class="panel">
+      <div class="stats">
+        <div class="stat">Total Lemons<span id="total-lemon">0</span></div>
+        <div class="stat">Lemons / Click<span id="lemons-per-click">1</span></div>
+        <div class="stat">Lemons / Second<span id="lemons-per-second">0</span></div>
+      </div>
+      <div class="button-wrap">
+        <button class="lemonade-btn" id="lemonade-btn">Squeeze</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="shop-header">
+        <h2>Upgrade Shop</h2>
+        <span id="shop-note">Unlock new ways to earn lemons.</span>
+      </div>
+      <div class="upgrade-list" id="upgrade-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    Tip: Passive income keeps flowing even when you pause clicking.
+  </footer>
+
+  <script>
+    const formatter = new Intl.NumberFormat("en-US");
+    const state = {
+      lemons: 0,
+      lemonsPerClick: 1,
+      lemonsPerSecond: 0,
+      clickMultiplier: 1,
+      autoMultiplier: 1,
+      upgrades: []
+    };
+
+    const upgrades = [
+      {
+        name: "Lemonade Stand",
+        cost: 15,
+        description: "Upgrade to a stand. Lemons per click 1 → 2.",
+        effect() {
+          state.lemonsPerClick = 2;
+        }
+      },
+      {
+        name: "Helper Kid",
+        cost: 60,
+        description: "+1 lemon per second.",
+        effect() {
+          state.lemonsPerSecond += 1;
+        }
+      },
+      {
+        name: "Better Cups",
+        cost: 130,
+        description: "+2 lemons per click.",
+        effect() {
+          state.lemonsPerClick += 2;
+        }
+      },
+      {
+        name: "Ice Machine",
+        cost: 250,
+        description: "+3 lemons per second.",
+        effect() {
+          state.lemonsPerSecond += 3;
+        }
+      },
+      {
+        name: "Fresh Lemon Crates",
+        cost: 450,
+        description: "+4 lemons per click.",
+        effect() {
+          state.lemonsPerClick += 4;
+        }
+      },
+      {
+        name: "Neighborhood Delivery",
+        cost: 800,
+        description: "+6 lemons per second.",
+        effect() {
+          state.lemonsPerSecond += 6;
+        }
+      },
+      {
+        name: "Recipe Boost",
+        cost: 1200,
+        description: "Lemons per click x1.5.",
+        effect() {
+          state.clickMultiplier *= 1.5;
+        }
+      },
+      {
+        name: "Flavor Stand",
+        cost: 2000,
+        description: "+10 lemons per click.",
+        effect() {
+          state.lemonsPerClick += 10;
+        }
+      },
+      {
+        name: "Street Team",
+        cost: 3200,
+        description: "+15 lemons per second.",
+        effect() {
+          state.lemonsPerSecond += 15;
+        }
+      },
+      {
+        name: "Premium Pitcher",
+        cost: 5200,
+        description: "Lemons per click x2.",
+        effect() {
+          state.clickMultiplier *= 2;
+        }
+      },
+      {
+        name: "Festival Booth",
+        cost: 8500,
+        description: "+30 lemons per second.",
+        effect() {
+          state.lemonsPerSecond += 30;
+        }
+      },
+      {
+        name: "Citrus Marketing",
+        cost: 14000,
+        description: "+25 lemons per click.",
+        effect() {
+          state.lemonsPerClick += 25;
+        }
+      },
+      {
+        name: "Lemon Squeezer 3000",
+        cost: 22000,
+        description: "Lemons per click x2.",
+        effect() {
+          state.clickMultiplier *= 2;
+        }
+      },
+      {
+        name: "Cold Storage",
+        cost: 38000,
+        description: "Auto income x1.5.",
+        effect() {
+          state.autoMultiplier *= 1.5;
+        }
+      },
+      {
+        name: "Citywide Delivery",
+        cost: 72000,
+        description: "+120 lemons per second.",
+        effect() {
+          state.lemonsPerSecond += 120;
+        }
+      },
+      {
+        name: "Golden Lemon Blend",
+        cost: 150000,
+        description: "+120 lemons per click.",
+        effect() {
+          state.lemonsPerClick += 120;
+        }
+      },
+      {
+        name: "Lemonade Factory",
+        cost: 400000,
+        description: "Auto income x2.",
+        effect() {
+          state.autoMultiplier *= 2;
+        }
+      },
+      {
+        name: "Lemonade Empire",
+        cost: 1200000,
+        description: "+600 lemons per click and +500 lemons per second.",
+        effect() {
+          state.lemonsPerClick += 600;
+          state.lemonsPerSecond += 500;
+        }
+      }
+    ];
+
+    const totalLemonEl = document.getElementById("total-lemon");
+    const perClickEl = document.getElementById("lemons-per-click");
+    const perSecondEl = document.getElementById("lemons-per-second");
+    const lemonadeBtn = document.getElementById("lemonade-btn");
+    const upgradeList = document.getElementById("upgrade-list");
+
+    let audioContext = null;
+
+    const getAudioContext = () => {
+      if (!window.AudioContext) {
+        return null;
+      }
+      if (!audioContext) {
+        try {
+          audioContext = new AudioContext();
+        } catch (error) {
+          return null;
+        }
+      }
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      return audioContext;
+    };
+
+    const createUpgradeCard = (upgrade, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "upgrade";
+      wrapper.dataset.index = index;
+      const title = document.createElement("strong");
+      title.textContent = upgrade.name;
+      const description = document.createElement("p");
+      description.textContent = upgrade.description;
+      const button = document.createElement("button");
+      button.textContent = `Buy (${formatter.format(upgrade.cost)} lemons)`;
+      button.addEventListener("click", () => purchaseUpgrade(index));
+      wrapper.append(title, description, button);
+      return wrapper;
+    };
+
+    const renderUpgrades = () => {
+      upgradeList.innerHTML = "";
+      upgrades.forEach((upgrade, index) => {
+        if (state.upgrades.includes(index)) {
+          return;
+        }
+        const card = createUpgradeCard(upgrade, index);
+        upgradeList.appendChild(card);
+      });
+      updateButtons();
+    };
+
+    const updateButtons = () => {
+      const cards = upgradeList.querySelectorAll(".upgrade");
+      cards.forEach((card) => {
+        const upgradeIndex = Number(card.dataset.index);
+        const button = card.querySelector("button");
+        button.disabled = state.lemons < upgrades[upgradeIndex].cost;
+      });
+    };
+
+    const updateStats = () => {
+      totalLemonEl.textContent = formatter.format(Math.floor(state.lemons));
+      perClickEl.textContent = formatter.format(calculateClickPower());
+      perSecondEl.textContent = formatter.format(calculateAutoPower());
+      updateButtons();
+    };
+
+    const calculateClickPower = () => Math.floor(state.lemonsPerClick * state.clickMultiplier);
+
+    const calculateAutoPower = () => Math.floor(state.lemonsPerSecond * state.autoMultiplier);
+
+    const playClickSound = () => {
+      const context = getAudioContext();
+      if (!context) {
+        return;
+      }
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.value = 520;
+      gain.gain.value = 0.15;
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.15);
+      oscillator.stop(context.currentTime + 0.16);
+    };
+
+    const spawnClickBurst = () => {
+      const burst = document.createElement("div");
+      burst.className = "click-burst";
+      burst.textContent = `+${formatter.format(calculateClickPower())}`;
+      const x = 50 + (Math.random() * 40 - 20);
+      burst.style.left = `${x}%`;
+      burst.style.top = `${50 + (Math.random() * 20 - 10)}%`;
+      lemonadeBtn.parentElement.appendChild(burst);
+      setTimeout(() => burst.remove(), 800);
+    };
+
+    const clickLemonade = () => {
+      state.lemons += calculateClickPower();
+      playClickSound();
+      spawnClickBurst();
+      updateStats();
+    };
+
+    const purchaseUpgrade = (index) => {
+      const upgrade = upgrades[index];
+      if (state.lemons < upgrade.cost) {
+        return;
+      }
+      state.lemons -= upgrade.cost;
+      upgrade.effect();
+      state.upgrades.push(index);
+      renderUpgrades();
+      updateStats();
+    };
+
+    lemonadeBtn.addEventListener("click", clickLemonade);
+
+    setInterval(() => {
+      state.lemons += calculateAutoPower() / 10;
+      updateStats();
+    }, 100);
+
+    renderUpgrades();
+    updateStats();
+  </script>
+</body>
+</html>
