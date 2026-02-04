@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ice Cream Stack</title>
+  <style>
+    :root {
+      --bg-top: #ffeef7;
+      --bg-bottom: #fff7d6;
+      --cone: #f7c58b;
+      --cone-shadow: #e0a866;
+      --scoop-shadow: rgba(255, 255, 255, 0.55);
+      --text: #6a4c93;
+      --accent: #ff90b3;
+      --accent-2: #7bdff2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .game {
+      width: min(480px, 92vw);
+      height: min(720px, 92vh);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(6px);
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .stats {
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .stats span {
+      display: block;
+    }
+
+    .playfield {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      border-radius: 28px;
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
+      box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.65), 0 20px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .lane {
+      position: absolute;
+      left: 50%;
+      bottom: 120px;
+      width: 240px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+
+    .cone {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      width: 150px;
+      height: 200px;
+      transform: translateX(-50%);
+      background: linear-gradient(160deg, var(--cone), var(--cone-shadow));
+      clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+      border-radius: 12px 12px 40px 40px;
+      box-shadow: 0 12px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .cone::before {
+      content: "";
+      position: absolute;
+      inset: 14px 18px auto;
+      height: 120px;
+      border-radius: 24px;
+      background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35) 8px, rgba(255, 255, 255, 0.1) 8px, rgba(255, 255, 255, 0.1) 16px);
+      opacity: 0.6;
+    }
+
+    .scoop {
+      position: absolute;
+      left: 50%;
+      width: 140px;
+      height: 80px;
+      transform: translateX(-50%);
+      border-radius: 70px 70px 60px 60px;
+      box-shadow: inset -10px -12px 0 rgba(0, 0, 0, 0.08), inset 12px 10px 0 var(--scoop-shadow), 0 12px 16px rgba(0, 0, 0, 0.12);
+      transition: transform 120ms ease;
+    }
+
+    .scoop::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      width: 70%;
+      height: 40%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      filter: blur(1px);
+    }
+
+    .scoop.active {
+      animation: sway 1.1s ease-in-out infinite;
+    }
+
+    .scoop.bounce {
+      animation: bounce 260ms ease-out;
+    }
+
+    .scoop.fail {
+      animation: fall 500ms ease-in forwards;
+    }
+
+    .message {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.8);
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    .message.show {
+      opacity: 1;
+    }
+
+    .combo {
+      position: absolute;
+      right: 16px;
+      bottom: 160px;
+      padding: 6px 14px;
+      border-radius: 14px;
+      background: var(--accent-2);
+      color: #19434d;
+      font-weight: 700;
+      box-shadow: 0 12px 18px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .combo.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hint {
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #7a5c9d;
+      text-align: center;
+    }
+
+    @keyframes sway {
+      0%,
+      100% {
+        transform: translateX(-50%) rotate(-3deg);
+      }
+      50% {
+        transform: translateX(-50%) rotate(3deg);
+      }
+    }
+
+    @keyframes bounce {
+      0% {
+        transform: translateX(-50%) translateY(-10px) scale(0.98);
+      }
+      50% {
+        transform: translateX(-50%) translateY(4px) scale(1.02);
+      }
+      100% {
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+    }
+
+    @keyframes fall {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(160px) rotate(24deg) scale(0.9);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game" id="game">
+    <header>
+      <h1>Ice Cream Stack</h1>
+      <div class="stats">
+        <span id="score">Score: 0</span>
+        <span id="speed">Speed: 1x</span>
+      </div>
+    </header>
+    <div class="hint">Click or tap to drop the scoop. Nail the center for combo bonuses!</div>
+    <div class="playfield" id="playfield">
+      <div class="message" id="message">Perfect!</div>
+      <div class="combo" id="combo">Combo x1</div>
+      <div class="lane" id="lane">
+        <div class="cone"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const lane = document.getElementById("lane");
+    const scoreEl = document.getElementById("score");
+    const speedEl = document.getElementById("speed");
+    const messageEl = document.getElementById("message");
+    const comboEl = document.getElementById("combo");
+
+    const colors = ["#ffb5d8", "#b7f0ad", "#ffd6a5", "#cdb4db", "#a2d2ff", "#ffd8be"];
+
+    const state = {
+      stack: [],
+      score: 0,
+      speed: 1,
+      combo: 0,
+      active: null,
+      laneWidth: 240,
+      baseTop: 340,
+      scoopHeight: 70,
+      sway: 0,
+      swayDir: 1,
+      swaySpeed: 1,
+      frame: null,
+      gameOver: false,
+    };
+
+    const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
+
+    const createScoop = (top, left = 0) => {
+      const scoop = document.createElement("div");
+      scoop.className = "scoop";
+      scoop.style.background = getRandomColor();
+      scoop.style.top = `${top}px`;
+      scoop.dataset.x = left;
+      scoop.style.left = `calc(50% + ${left}px)`;
+      lane.appendChild(scoop);
+      return scoop;
+    };
+
+    const updateScore = () => {
+      scoreEl.textContent = `Score: ${state.score}`;
+      speedEl.textContent = `Speed: ${state.speed.toFixed(1)}x`;
+    };
+
+    const showMessage = (text) => {
+      messageEl.textContent = text;
+      messageEl.classList.add("show");
+      setTimeout(() => messageEl.classList.remove("show"), 600);
+    };
+
+    const showCombo = (value) => {
+      comboEl.textContent = `Combo x${value}`;
+      comboEl.classList.add("show");
+      setTimeout(() => comboEl.classList.remove("show"), 600);
+    };
+
+    const resetGame = () => {
+      cancelAnimationFrame(state.frame);
+      state.stack.forEach((scoop) => scoop.remove());
+      if (state.active) state.active.remove();
+      state.stack = [];
+      state.score = 0;
+      state.speed = 1;
+      state.combo = 0;
+      state.gameOver = false;
+      state.sway = 0;
+      state.swayDir = 1;
+      updateScore();
+      spawnActive();
+      animate();
+    };
+
+    const spawnActive = () => {
+      const top = state.baseTop - state.stack.length * state.scoopHeight;
+      state.active = createScoop(top, 0);
+      state.active.classList.add("active");
+    };
+
+    const animate = () => {
+      if (state.gameOver) return;
+      state.sway += state.swayDir * state.swaySpeed * state.speed;
+      if (state.sway > 70) state.swayDir = -1;
+      if (state.sway < -70) state.swayDir = 1;
+      if (state.active) {
+        state.active.dataset.x = state.sway;
+        state.active.style.left = `calc(50% + ${state.sway}px)`;
+      }
+      state.frame = requestAnimationFrame(animate);
+    };
+
+    const dropScoop = () => {
+      if (!state.active || state.gameOver) return;
+      state.active.classList.remove("active");
+      const currentX = parseFloat(state.active.dataset.x || "0");
+      const lastX = state.stack.length ? parseFloat(state.stack[state.stack.length - 1].dataset.x) : 0;
+      const offset = Math.abs(currentX - lastX);
+      const perfect = offset < 8;
+      const allowed = 42 - state.speed * 2;
+
+      if (offset > allowed) {
+        state.gameOver = true;
+        state.active.classList.add("fail");
+        showMessage("Oops! Scoop slipped.");
+        setTimeout(resetGame, 650);
+        return;
+      }
+
+      state.active.dataset.x = currentX.toFixed(2);
+      state.active.style.left = `calc(50% + ${currentX}px)`;
+      state.active.classList.add("bounce");
+      setTimeout(() => state.active && state.active.classList.remove("bounce"), 260);
+
+      state.stack.push(state.active);
+      state.active = null;
+
+      let bonus = 1;
+      if (perfect) {
+        state.combo += 1;
+        bonus += state.combo;
+        showMessage("Perfect!");
+        showCombo(state.combo);
+      } else {
+        state.combo = 0;
+      }
+
+      state.score += bonus * 10;
+      state.speed = Math.min(2.6, state.speed + 0.08);
+      updateScore();
+      spawnActive();
+    };
+
+    document.addEventListener("pointerdown", (event) => {
+      if (event.target.closest("header")) return;
+      dropScoop();
+    });
+
+    resetGame();
+  </script>
+</body>
+</html>
