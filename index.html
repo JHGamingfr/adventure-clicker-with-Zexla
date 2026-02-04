@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunTap!</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --sky: #6ec9ff;
+      --sun: #ffde59;
+      --sun-hot: #ffb347;
+      --ocean: #2c7df0;
+      --orange: #ff8a3d;
+      --shadow: rgba(0, 0, 0, 0.2);
+      --card: rgba(255, 255, 255, 0.85);
+      --ink: #163c5c;
+      --accent: #ff6b35;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--sky) 0%, #b8e6ff 40%, #fef3c7 100%);
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    .game-shell {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      padding: 24px 32px;
+      height: 100vh;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 20px var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .stat-card h3 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #2c557a;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .big-number {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .sun-stage {
+      flex: 1;
+      background: radial-gradient(circle at top, #ffffff 0%, #fef3c7 45%, #ffd1b3 100%);
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 -30px 60px rgba(255, 138, 61, 0.2),
+        0 18px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .sun {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff6b0 0%, var(--sun) 50%, var(--sun-hot) 100%);
+      box-shadow: 0 0 25px rgba(255, 209, 102, 0.6), 0 0 70px rgba(255, 138, 61, 0.6);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .sun:active {
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    .sun-core {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff3a0 0%, #ffe066 60%, #ffc53d 100%);
+      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.7);
+    }
+
+    .rays {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      border: 4px dashed rgba(255, 185, 70, 0.7);
+      animation: spin 8s linear infinite;
+    }
+
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--sun);
+      pointer-events: none;
+      animation: particle 0.9s ease-out forwards;
+      box-shadow: 0 0 10px rgba(255, 138, 61, 0.8);
+    }
+
+    .tap-burst {
+      position: absolute;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      animation: float-up 1s ease-out forwards;
+      pointer-events: none;
+      text-shadow: 0 4px 10px rgba(255, 107, 53, 0.5);
+    }
+
+    .combo-meter {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 999px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .combo-bar {
+      flex: 1;
+      height: 10px;
+      background: rgba(255, 165, 0, 0.25);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .combo-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ffd56b, #ff7a18);
+      transition: width 0.2s ease;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .upgrade-list {
+      flex: 1;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 10px 20px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .upgrade-card {
+      background: #fffdf2;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+      border: 2px solid transparent;
+      transition: transform 0.1s ease, border 0.2s ease;
+    }
+
+    .upgrade-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 138, 61, 0.4);
+    }
+
+    .upgrade-card button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 999px;
+      background: var(--orange);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(255, 107, 53, 0.4);
+    }
+
+    .upgrade-card button:disabled {
+      background: #d9d9d9;
+      color: #8a8a8a;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .milestone {
+      position: absolute;
+      right: 24px;
+      top: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px 18px;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .milestone.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .shake {
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(-8px); }
+      50% { transform: translate(-50%, -50%) translateY(8px); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes particle {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)) scale(0.2); opacity: 0; }
+    }
+
+    @keyframes float-up {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-60px); opacity: 0; }
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-6px, 4px); }
+      40% { transform: translate(5px, -3px); }
+      60% { transform: translate(-4px, 4px); }
+      80% { transform: translate(3px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .game-shell {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .sun-stage { min-height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell">
+    <section class="left-panel">
+      <div class="stats-bar">
+        <div class="stat-card">
+          <h3>Sun Points</h3>
+          <div class="big-number" id="points">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Per Tap</h3>
+          <div class="big-number" id="per-tap">1</div>
+        </div>
+        <div class="stat-card">
+          <h3>Per Second</h3>
+          <div class="big-number" id="per-second">0</div>
+        </div>
+      </div>
+
+      <div class="sun-stage" id="sun-stage">
+        <div class="milestone" id="milestone">
+          <strong>Milestone!</strong>
+          <div id="milestone-text">First light!</div>
+        </div>
+        <div class="sun" id="sun">
+          <div class="rays"></div>
+          <div class="sun-core"></div>
+        </div>
+        <div class="combo-meter">
+          <div>
+            <strong>Combo x<span id="combo-count">1</span></strong>
+            <div style="font-size:0.85rem;color:#5c7288;">Keep tapping!</div>
+          </div>
+          <div class="combo-bar">
+            <div class="combo-fill" id="combo-fill"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="right-panel">
+      <div class="stat-card">
+        <h3>Streak</h3>
+        <div class="big-number" id="streak">0</div>
+      </div>
+      <div class="upgrade-list" id="upgrade-list">
+        <h2>Sunny Upgrades</h2>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      points: 0,
+      perTap: 1,
+      perSecond: 0,
+      combo: 1,
+      comboTimer: null,
+      streak: 0,
+      milestones: [50, 200, 500, 1000, 2500, 5000, 10000],
+      lastMilestone: 0
+    };
+
+    const upgrades = [
+      { name: "Solar Panels", desc: "+1 per tap, +0.5 per sec", tap: 1, pps: 0.5, baseCost: 25, owned: 0 },
+      { name: "Beach Mirrors", desc: "+3 per tap, +1 per sec", tap: 3, pps: 1, baseCost: 120, owned: 0 },
+      { name: "Sunglasses", desc: "+8 per tap, +4 per sec", tap: 8, pps: 4, baseCost: 450, owned: 0 },
+      { name: "Power Plants", desc: "+20 per tap, +12 per sec", tap: 20, pps: 12, baseCost: 1200, owned: 0 }
+    ];
+
+    const pointsEl = document.getElementById("points");
+    const perTapEl = document.getElementById("per-tap");
+    const perSecondEl = document.getElementById("per-second");
+    const streakEl = document.getElementById("streak");
+    const comboCountEl = document.getElementById("combo-count");
+    const comboFillEl = document.getElementById("combo-fill");
+    const sunStage = document.getElementById("sun-stage");
+    const sun = document.getElementById("sun");
+    const milestoneEl = document.getElementById("milestone");
+    const milestoneText = document.getElementById("milestone-text");
+    const upgradeList = document.getElementById("upgrade-list");
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const formatNumber = (value) => {
+      if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
+      if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+      if (value >= 1e3) return `${(value / 1e3).toFixed(2)}K`;
+      return Math.floor(value).toString();
+    };
+
+    const updateStats = () => {
+      pointsEl.textContent = formatNumber(state.points);
+      perTapEl.textContent = formatNumber(state.perTap);
+      perSecondEl.textContent = formatNumber(state.perSecond);
+      streakEl.textContent = state.streak;
+      comboCountEl.textContent = state.combo;
+      comboFillEl.style.width = `${Math.min((state.combo - 1) * 20, 100)}%`;
+      updateUpgradeButtons();
+    };
+
+    const playPop = () => {
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(620, audioCtx.currentTime + 0.08);
+      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.2);
+    };
+
+    const spawnParticles = (x, y) => {
+      for (let i = 0; i < 12; i += 1) {
+        const particle = document.createElement("div");
+        particle.className = "particle";
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 50 + Math.random() * 40;
+        particle.style.setProperty("--x", `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty("--y", `${Math.sin(angle) * distance}px`);
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.background = i % 2 === 0 ? "#ffb347" : "#ffd56b";
+        sunStage.appendChild(particle);
+        particle.addEventListener("animationend", () => particle.remove());
+      }
+    };
+
+    const spawnTapBurst = (x, y, amount) => {
+      const burst = document.createElement("div");
+      burst.className = "tap-burst";
+      burst.style.left = `${x}px`;
+      burst.style.top = `${y}px`;
+      burst.textContent = `+${formatNumber(amount)}`;
+      sunStage.appendChild(burst);
+      burst.addEventListener("animationend", () => burst.remove());
+    };
+
+    const screenShake = () => {
+      sunStage.classList.add("shake");
+      setTimeout(() => sunStage.classList.remove("shake"), 280);
+    };
+
+    const handleTap = (event) => {
+      const rect = sunStage.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const gained = state.perTap * state.combo;
+      state.points += gained;
+      state.streak += 1;
+      state.combo = Math.min(state.combo + 1, 6);
+
+      clearTimeout(state.comboTimer);
+      state.comboTimer = setTimeout(() => {
+        state.combo = 1;
+        updateStats();
+      }, 1200);
+
+      spawnParticles(x, y);
+      spawnTapBurst(x, y, gained);
+      screenShake();
+      playPop();
+      checkMilestones();
+      updateStats();
+    };
+
+    const checkMilestones = () => {
+      const next = state.milestones.find((value) => value > state.lastMilestone);
+      if (next && state.points >= next) {
+        state.lastMilestone = next;
+        milestoneText.textContent = `${formatNumber(next)} Sun Points collected!`;
+        milestoneEl.classList.add("show");
+        setTimeout(() => milestoneEl.classList.remove("show"), 2400);
+      }
+    };
+
+    const upgradeCost = (upgrade) => Math.floor(upgrade.baseCost * Math.pow(1.35, upgrade.owned));
+
+    const renderUpgrades = () => {
+      upgrades.forEach((upgrade) => {
+        const card = document.createElement("div");
+        card.className = "upgrade-card";
+        card.innerHTML = `
+          <div>
+            <strong>${upgrade.name}</strong>
+            <div style="font-size:0.85rem;color:#5c7288;">${upgrade.desc}</div>
+            <div style="font-size:0.85rem;color:#f97316;">Owned: <span id="owned-${upgrade.name}">${upgrade.owned}</span></div>
+            <div style="font-size:0.85rem;">Cost: <span id="cost-${upgrade.name}">${formatNumber(upgradeCost(upgrade))}</span></div>
+          </div>
+          <button id="buy-${upgrade.name}">Buy</button>
+        `;
+        upgradeList.appendChild(card);
+        card.querySelector("button").addEventListener("click", () => buyUpgrade(upgrade));
+      });
+    };
+
+    const updateUpgradeButtons = () => {
+      upgrades.forEach((upgrade) => {
+        const cost = upgradeCost(upgrade);
+        const button = document.getElementById(`buy-${upgrade.name}`);
+        const costEl = document.getElementById(`cost-${upgrade.name}`);
+        const ownedEl = document.getElementById(`owned-${upgrade.name}`);
+        if (!button || !costEl || !ownedEl) return;
+        costEl.textContent = formatNumber(cost);
+        ownedEl.textContent = upgrade.owned;
+        button.disabled = state.points < cost;
+      });
+    };
+
+    const buyUpgrade = (upgrade) => {
+      const cost = upgradeCost(upgrade);
+      if (state.points < cost) return;
+      state.points -= cost;
+      upgrade.owned += 1;
+      state.perTap += upgrade.tap;
+      state.perSecond += upgrade.pps;
+      updateStats();
+    };
+
+    const passiveIncome = () => {
+      state.points += state.perSecond / 10;
+      updateStats();
+      checkMilestones();
+    };
+
+    sun.addEventListener("pointerdown", handleTap);
+
+    renderUpgrades();
+    updateStats();
+    setInterval(passiveIncome, 100);
+  </script>
+</body>
+</html>
