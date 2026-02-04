@@ -1,0 +1,60 @@
+const trends = [
+  {
+    id: 'tiktok-meme-1',
+    platform: 'TikTok',
+    type: 'memes',
+    title: '“Freeze Frame” Reaction Chain',
+    summary: 'Creators pause on the funniest frame and add their own caption layer.',
+    why: 'Easy remix format + quick punchline payoff keeps viewers looping.',
+    energy: '😆',
+  },
+  {
+    id: 'youtube-gaming-1',
+    platform: 'YouTube',
+    type: 'gaming',
+    title: '“One Life Challenge” Runs',
+    summary: 'Hardcore runs with one-life rules and dramatic timer overlays.',
+    why: 'High stakes + short chapters drive retention and replays.',
+    energy: '🎮',
+  },
+  {
+    id: 'shorts-edits-1',
+    platform: 'Shorts',
+    type: 'edits',
+    title: '“Beat-Synced Montage” Edits',
+    summary: 'Fast cuts that hit on bass drops using creator captions.',
+    why: 'Rhythm-based edits reward rewatching and sharing.',
+    energy: '⚡',
+  },
+  {
+    id: 'tiktok-challenge-1',
+    platform: 'TikTok',
+    type: 'challenges',
+    title: '“Two-Sentence Plot Twist” Challenge',
+    summary: 'Creators tell a story in two lines with a twist in the second.',
+    why: 'Minimal setup makes it super easy to join the trend.',
+    energy: '🧠',
+  },
+  {
+    id: 'youtube-sports-1',
+    platform: 'YouTube',
+    type: 'sports',
+    title: '“Mic’d Up Highlights” Cuts',
+    summary: 'Quick highlights with sideline audio and captions.',
+    why: 'Raw audio adds authenticity and keeps fans engaged.',
+    energy: '🏀',
+  },
+  {
+    id: 'shorts-commentary-1',
+    platform: 'Shorts',
+    type: 'commentary',
+    title: '“Hot Take in 20s”',
+    summary: 'Rapid-fire opinion with tight captions and fast jump cuts.',
+    why: 'Short format + strong opinion hooks viewers instantly.',
+    energy: '🔥',
+  },
+];
+
+module.exports = {
+  trends,
+};
