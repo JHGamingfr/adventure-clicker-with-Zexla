@@ -1,0 +1,15 @@
+{
+  "name": "hockeybot",
+  "version": "1.0.0",
+  "description": "HockeyBot - a fun, non-gambling NHL companion Discord bot",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "deploy-commands": "node src/deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5"
+  }
+}
