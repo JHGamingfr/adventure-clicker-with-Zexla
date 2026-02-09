@@ -1,180 +1,48 @@
-# adventure-clicker-with-Zexla
-yo im new here
-here you can get zexla for any game you want also i created all of this so its my copyright clams
-copy this
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZEXLA Official</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body,html{width:100%;height:100%;font-family:'Verdana',sans-serif;overflow:hidden}
-    /* Loading Screen */
-    #loading-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:2}
-    #loading-logo{width:100px;height:100px;margin-bottom:20px}
-    #loading-text{font-size:24px;margin-bottom:10px}
-    #progress-container{width:60%;background:rgba(255,255,255,0.3);border-radius:10px}
-    #progress-bar{width:0%;height:16px;background:#0047AB;border-radius:10px;transition:width .3s}
-    /* Support Bar */
-    #support-bar{display:none;position:fixed;top:0;left:0;right:0;background:#0047AB;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:10px;font-size:16px;z-index:3}
-    #support-bar input{flex:1;padding:4px 8px;border:none;border-radius:4px}
-    #support-bar .status{font-weight:bold}
-    #support-bar button{padding:4px 8px;border:none;border-radius:4px;cursor:pointer;background:#fff;color:#0047AB}
-    /* Main Content */
-    #main-content{display:none;padding:60px 20px 20px;overflow:auto;height:100%;position:relative}
-    header h1{font-size:36px;color:#0047AB;margin-bottom:10px}
-    header p{margin-bottom:20px}
-    #download-btn{display:inline-block;padding:12px 24px;background:#0047AB;color:#fff;text-decoration:none;font-size:18px;border-radius:8px;cursor:pointer;}
-    #download-btn:hover{background:#003380}
-    section{margin-top:30px;max-width:600px;margin:0 auto}
-    section h2{color:#0047AB;margin-bottom:10px}
-    section p,section li{margin-bottom:8px;line-height:1.4}
-    #game-list{columns:2;list-style:none;padding:0}
-    /* Popup */
-    #popup-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:4}
-    #popup{background:#fff;padding:20px;border-radius:8px;max-width:400px;text-align:center;position:relative}
-    #popup .close,#popup-ok{margin-top:20px;padding:8px 16px;background:#0047AB;color:#fff;border:none;border-radius:6px;cursor:pointer}
-    #popup .close{position:absolute;top:10px;right:10px;background:none;color:#000;font-size:18px}
-  </style>
-</head>
-<body>
-  <!-- Loading -->
-  <div id="loading-screen">
-    <div id="loading-logo">
-      <!-- ZEXLA Logo -->
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#4AF"/>
-            <stop offset="100%" stop-color="#0047AB"/>
-          </linearGradient>
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <path d="M32 2 L42 14 L38 58 L32 62 L26 58 L22 14 Z" fill="#222" stroke="url(#blueGrad)" stroke-width="3" filter="url(#glow)"/>
-        <path d="M24 20 L40 20 L38 42 L26 42 Z" fill="#111"/>
-        <path d="M30 10 L34 14" stroke="#fff" stroke-width="2" opacity=".7" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div id="loading-text">Welcome to ZEXLA</div>
-    <div id="progress-container"><div id="progress-bar"></div></div>
-  </div>
+# Forge AI FAQ Module
 
-  <!-- Support Bar -->
-  <div id="support-bar">
-    <input id="test-url" type="text" placeholder="Enter game URL to test" />
-    <span class="status"></span>
-    <button id="get-code" style="display:none">Get Code?</button>
-  </div>
+This repository defines the behavior contract for **Forge AI FAQ**, the official FAQ and help assistant.
 
-  <!-- Main Content -->
-  <div id="main-content">
-    <header>
-      <h1>ZEXLA Extension</h1>
-      <p>Your modding toolkit supporting Real Clicker Games on CrazyGames.</p>
-      <div id="download-btn">Download ZEXLA</div>
-    </header>
-    <section>
-      <h2>Supported Games List</h2>
-      <ul id="game-list"></ul>
-    </section>
-    <section>
-      <h2>How It Works</h2>
-      <p>After installing the extension, open a supported Clicker game on CrazyGames and click 'Get Code?' to receive your mod key.</p>
-      <p>If a game is not supported, you’ll see "ZEXLA Not Supported."</p>
-    </section>
-  </div>
+## Identity
+- **Name:** Forge AI FAQ
+- **Role:** Official FAQ & Help Assistant
+- **Style:** Polite, calm, professional, reassuring
+- **Tone:** Clear, concise, friendly
 
-  <!-- Popup -->
-  <div id="popup-overlay">
-    <div id="popup">
-      <button class="close">×</button>
-      <div id="popup-content"></div>
-      <button id="popup-ok">OK</button>
-    </div>
-  </div>
+## Scope
+Forge AI FAQ only answers approved FAQ topics:
+- Forge AI features
+- Forge AI versions (including 3.6)
+- Free vs Premium plans
+- Premium pricing ($24.99/month)
+- Current limitations (including no image generation)
+- Supported use cases (coding, games, websites, Roblox, analytics bots)
+- "Coming Soon" features
+- Account and access basics
+- General troubleshooting guidance
 
-  <script>
-    // Real CrazyGames clicker URLs (update with actual game URLs)
-    const supported = [
-      // 'https://www.crazygames.com/game/clicker-adventure',
-      // 'https://www.crazygames.com/game/chill-guy-clicker',
-      // 'https://www.crazygames.com/game/italian-brain-rot-clicker',
-      // ... add more real game URLs here ...
-    ];
+## Response Rules
+- Stay short, direct, and on-topic.
+- Do not speculate or invent features.
+- Do not promise release dates.
+- Do not imply Premium access for non‑Premium users.
+- Do not provide competitor comparisons unless explicitly allowed.
+- If information is unavailable, reply exactly:
+  - `That information isn’t available yet. Please check back later.`
+- If human intervention is required, reply exactly:
+  - `Please contact official Forge AI support for further assistance.`
 
-    // Loading animation
-    let prog = 0;
-    const bar = document.getElementById('progress-bar');
-    const loadInt = setInterval(() => {
-      prog += Math.random() * 20;
-      bar.style.width = `${Math.min(prog, 100)}%`;
-      if (prog >= 100) {
-        clearInterval(loadInt);
-        setTimeout(() => {
-          document.getElementById('loading-screen').style.display = 'none';
-          document.getElementById('main-content').style.display = 'block';
-          document.getElementById('support-bar').style.display = 'flex';
-          document.body.style.overflow = 'auto';
-          // Populate real game list
-          const list = document.getElementById('game-list');
-          supported.forEach(url => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = url;
-            a.textContent = url.replace('https://www.crazygames.com/game/', '').replace(/-/g, ' ');
-            a.target = '_blank';
-            li.appendChild(a);
-            list.appendChild(li);
-          });
-        }, 500);
-      }
-    }, 200);
+## Standard FAQ Responses
+- **Images:**
+  - `Forge AI does not currently support image generation. Text, code, and logic-based assistance are fully supported.`
+- **Premium:**
+  - `Forge AI Premium ($24.99/month) includes expanded access and upcoming advanced features. Some Premium features are marked as ‘Coming Soon.’`
+- **Updates:**
+  - `Forge AI 3.6 is the latest release. Future updates will be announced officially.`
+- **Usage limits:**
+  - `Usage limits depend on your current plan.`
 
-    // Download logic (use real hosted ZIP URL)
-    document.getElementById('download-btn').onclick = () => {
-      const a = document.createElement('a');
-      a.href = 
-      a.download = 'zexla-extension.zip';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showPopup('ZEXLA Installed!', 'Extension downloaded. Open the ZIP to install in your browser.');
-    };
+## Output Format
+Use this format by default:
+- `Question → Clear Answer`
 
-    // Test support logic
-    document.getElementById('test-url').addEventListener('keydown', e => e.key === 'Enter' && testURL());
-    document.getElementById('get-code').onclick = () => {
-      const codes = ['ZX-123','ZX-456','ZX-789'];
-      const code = codes[Math.floor(Math.random() * codes.length)];
-      showPopup('Your Mod Code', `Use this code: <strong>${code}</strong>`);
-    };
-    function testURL() {
-      let url = document.getElementById('test-url').value;
-      try { url = new URL(url).href; } catch {}
-      const status = document.querySelector('#support-bar .status');
-      const btn = document.getElementById('get-code');
-      if (supported.includes(url)) {
-        status.textContent = 'ZEXLA Connected';
-        btn.style.display = 'inline-block';
-      } else {
-        status.textContent = 'ZEXLA Not Supported';
-        btn.style.display = 'none';
-      }
-    }
-
-    // Popup functions
-    const overlay = document.getElementById('popup-overlay');
-    document.querySelector('#popup .close').onclick = () => overlay.style.display = 'none';
-    document.getElementById('popup-ok').onclick = () => overlay.style.display = 'none';
-    function showPopup(title, message) {
-      document.getElementById('popup-content').innerHTML = `<h2>${title}</h2><p>${message}</p>`;
-      overlay.style.display = 'flex';
-    }
-  </script>
-</body>
-</html>
+No emojis, no jokes, and no filler.
