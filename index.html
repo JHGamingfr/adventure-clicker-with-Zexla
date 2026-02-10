@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meme Soundboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <h1>🎛️ Meme Soundboard</h1>
+        <p>Hit a pad, trigger chaos, and spam your friends with meme energy.</p>
+      </header>
+
+      <section class="controls" aria-label="Soundboard controls">
+        <label for="volume">Volume</label>
+        <input id="volume" type="range" min="0" max="100" value="80" />
+        <button id="random">🎲 Random Meme</button>
+        <button id="stop">⏹️ Stop All</button>
+      </section>
+
+      <section id="soundboard" class="grid" aria-label="Meme sounds"></section>
+
+      <section class="tips" aria-label="Tips">
+        <h2>How to use</h2>
+        <ul>
+          <li>Click any tile to play a meme sound.</li>
+          <li>Use keyboard shortcuts (shown in each tile).</li>
+          <li>Mix sounds together for ultimate goblin mode.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
