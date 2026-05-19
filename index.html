@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What to Say Study Coach</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --accent: #7c9cff;
+      --accent-2: #53e0c3;
+      --text: #ecf1ff;
+      --muted: #a8b6df;
+      --danger: #ff7d7d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 20% -10%, #20336d 0%, transparent 40%), var(--bg);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 28px 18px 40px; }
+    .hero { margin-bottom: 22px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.8rem); }
+    .sub { color: var(--muted); margin: 0; line-height: 1.5; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)), var(--card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    label { display: block; font-weight: 700; margin-bottom: 8px; }
+    textarea, select, button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: #0f1630;
+      color: var(--text);
+      padding: 12px;
+      font: inherit;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    .grid { display: grid; gap: 14px; grid-template-columns: 1fr; margin-top: 12px; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 2fr 1fr; } }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #031022;
+      font-weight: 800;
+      cursor: pointer;
+      border: 0;
+    }
+    button:hover { filter: brightness(1.05); }
+    .results { margin-top: 20px; display: grid; gap: 12px; }
+    .panel h2 { margin: 0 0 8px; font-size: 1.1rem; color: #d5e0ff; }
+    .panel p { margin: 0; color: #eef3ff; line-height: 1.55; white-space: pre-wrap; }
+    .hint { margin-top: 10px; color: var(--muted); font-size: .93rem; }
+    .error { color: var(--danger); margin-top: 8px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>🎯 What to Say Study Coach</h1>
+      <p class="sub">Your expert study assistant and peer tutor. Type any school topic, question, or confusing idea, and get the exact words to use.</p>
+    </section>
+
+    <section class="card">
+      <label for="topic">What are you learning?</label>
+      <textarea id="topic" placeholder="Example: Explain photosynthesis for 7th grade, and what the test answer should look like."></textarea>
+      <div class="grid">
+        <div>
+          <label for="grade">Grade level</label>
+          <select id="grade">
+            <option>Elementary (3-5)</option>
+            <option selected>Middle School (6-8)</option>
+            <option>High School (9-12)</option>
+            <option>College Intro</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:end;">
+          <button id="generate">Generate my answer</button>
+        </div>
+      </div>
+      <p class="hint">Tip: Include key terms your teacher expects.</p>
+      <p id="error" class="error" hidden>Please enter a topic first.</p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <article class="card panel">
+        <h2>1) How to say it on a test</h2>
+        <p id="testAnswer"></p>
+      </article>
+      <article class="card panel">
+        <h2>2) How to explain it to a friend</h2>
+        <p id="friendAnswer"></p>
+      </article>
+      <article class="card panel">
+        <h2>3) The Cheat Sheet Shortcut</h2>
+        <p id="cheatSheet"></p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const topic = document.getElementById('topic');
+    const grade = document.getElementById('grade');
+    const error = document.getElementById('error');
+
+    function buildResponse(userTopic, gradeLevel) {
+      const shortTopic = userTopic.trim().replace(/\s+/g, ' ');
+
+      const test = `For ${gradeLevel}, a strong answer should define the concept clearly, use correct vocabulary, and connect cause-and-effect.\n\nTopic focus: ${shortTopic}.\n\nStart by giving a clean definition, then include 2-3 key facts, and finish with why it matters.`;
+
+      const friend = `Think of "${shortTopic}" like explaining a game strategy to a friend: first say what it is, then what happens step-by-step, then why that step helps you win. Keep it simple and concrete.`;
+
+      const cheat = `Memory trick: "Define -> Key facts -> Why it matters" for ${shortTopic}.`;
+
+      return { test, friend, cheat };
+    }
+
+    document.getElementById('generate').addEventListener('click', () => {
+      if (!topic.value.trim()) {
+        error.hidden = false;
+        return;
+      }
+      error.hidden = true;
+      const { test, friend, cheat } = buildResponse(topic.value, grade.value);
+      document.getElementById('testAnswer').textContent = test;
+      document.getElementById('friendAnswer').textContent = friend;
+      document.getElementById('cheatSheet').textContent = cheat;
+      document.getElementById('results').hidden = false;
+    });
+  </script>
+</body>
+</html>
